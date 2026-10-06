@@ -1,4 +1,4 @@
-name: sandcastle · release cut
+  name: sandcastle · release cut
 
 on:
   workflow_dispatch:
