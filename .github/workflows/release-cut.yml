@@ -39,6 +39,7 @@ jobs:
             npm run build
           else
             echo "仓库无 build 脚本，dry-run 构建通过（占位）"
+        fi
 
       - name: 生成 release notes（预览）
         run: |
@@ -57,7 +58,7 @@ jobs:
         run: |
           git config user.name "sandcastle[bot]"
           git config user.email "sandcastle[bot]@users.noreply.github.com"
-          git checkout -b "releases/${{ inputs.version }}"
+          git checkout -B "releases/${{ inputs.version }}"
           git push -u origin "releases/${{ inputs.version }}"
 
       - name: 通知贡献者
