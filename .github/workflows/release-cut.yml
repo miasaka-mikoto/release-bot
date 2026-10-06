@@ -39,7 +39,7 @@ jobs:
             npm run build
           else
             echo "仓库无 build 脚本，dry-run 构建通过（占位）"
-        fi
+          fi
 
       - name: 生成 release notes（预览）
         run: |
