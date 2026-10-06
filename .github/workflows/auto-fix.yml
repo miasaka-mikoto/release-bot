@@ -1,0 +1,39 @@
+name: poteto · auto fix
+
+# 监听 bot-fix issue：确认接手 + 产出结构化修复任务。
+# 真正的 agent 自动修复是扩展点，见 docs/ROADMAP.md
+#（自托管 runner + codex-cli / Cursor Background Agents 任选其一接入）。
+
+on:
+  issues:
+    types: [labeled]
+
+permissions:
+  issues: write
+  contents: read
+
+jobs:
+  triage:
+    if: github.event.label.name == 'bot-fix'
+    runs-on: ubuntu-latest
+    steps:
+      - name: 确认接手
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh issue comment ${{ github.event.issue.number }} --body \
+          "On it. 🤖 已接手，正在分析失败报告。分析完成后我会在此更新：复现路径、影响范围、建议修复方案。—— poteto"
+
+      - name: 结构化任务摘要
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          cat >> "$GITHUB_STEP_SUMMARY" <<'EOF'
+          ## poteto 接手记录
+          - issue：${{ github.event.issue.html_url }}
+          - 下一步（人工或 agent 执行）：
+            1. 按失败报告复现
+            2. 定位回归点，判断 NEW 还是 PRE-EXISTING
+            3. 修完后 cherry-pick 到发布分支并跑冒烟，关闭本 issue
+          - agent 执行层接入方式见 docs/ROADMAP.md
+          EOF
