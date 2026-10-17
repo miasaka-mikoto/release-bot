@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { execFileSync, execSync } from 'node:child_process';
-import { mkdtempSync, writeFileSync } from 'node:fs';
+import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -40,4 +40,18 @@ test('非约定式提交归入杂项', () => {
   const dir = makeRepo(['random message without type']);
   const out = execFileSync('node', [notesScript, '--from', 'HEAD'], { cwd: dir, encoding: 'utf8' });
   assert.match(out, /🔧 杂项/);
+});
+
+test('多条提交的短 hash 完整且不包含换行', (t) => {
+  const dir = makeRepo(['feat: first change', 'fix: second change', 'docs: third change']);
+  t.after(() => rmSync(dir, { recursive: true, force: true }));
+  const out = execFileSync('node', [notesScript, '--from', 'HEAD'], { cwd: dir, encoding: 'utf8' });
+  const expectedHashes = execFileSync('git', ['rev-list', '--no-merges', 'HEAD'], {
+    cwd: dir,
+    encoding: 'utf8',
+  }).trim().split('\n').map((hash) => hash.slice(0, 7));
+  const renderedHashes = [...out.matchAll(/`([^`]+)`/g)].map((match) => match[1]);
+
+  assert.deepEqual(renderedHashes.sort(), expectedHashes.sort());
+  assert.equal(out.split('\n').filter((line) => /^- .* `[0-9a-f]{7}`$/.test(line)).length, 3);
 });
