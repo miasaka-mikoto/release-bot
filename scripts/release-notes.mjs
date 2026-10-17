@@ -61,7 +61,7 @@ export function buildNotes(range) {
     const type = classify(clean);
     const bucket = groups.has(type) ? type : 'chore';
     const pr = (clean.match(/#(\d+)/) || [])[1];
-    groups.get(bucket).push({ hash: (hash || '').slice(0, 7), author, subject: clean, pr });
+    groups.get(bucket).push({ hash: (hash || '').trim().slice(0, 7), author, subject: clean, pr });
     if (author) authors.add(author);
   }
 
